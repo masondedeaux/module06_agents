@@ -1,6 +1,3 @@
-# AI-assisted code; see AI_DISCLOSURE.md for the original generated classes.
-
-
 class CafeAssistant:  # Organize a mock cafe assistant's state and behavior.
     def __init__(self, name, tool):  # Receive a name and a separate FAQ tool.
         self.name = name  # Store the name used in greetings.

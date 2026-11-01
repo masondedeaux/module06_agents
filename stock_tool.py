@@ -1,6 +1,3 @@
-# AI-assisted code; see AI_DISCLOSURE.md for the original generated classes.
-
-
 class StockLookup:  # Keep stock lookup separate from conversation rules.
     def __init__(self, stock):  # Receive product names mapped to counts.
         self.stock = stock  # Store the supplied stock dictionary on this tool.

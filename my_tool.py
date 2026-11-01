@@ -1,6 +1,3 @@
-# AI-assisted code; see AI_DISCLOSURE.md for the original generated classes.
-
-
 class FaqLookup:  # Keep cafe FAQ data independent of conversation code.
     def __init__(self, answers):  # Receive topic names mapped to factual replies.
         self.answers = answers  # Store the made-up cafe's FAQ dictionary.

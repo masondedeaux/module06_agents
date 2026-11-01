@@ -1,5 +1,3 @@
-# AI-assisted code; see AI_DISCLOSURE.md for the original generated classes.
-
 HANDOFF_WORDS = ["address", "payment", "card"]
 
 

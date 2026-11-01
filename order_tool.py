@@ -1,6 +1,3 @@
-# AI-assisted code; see AI_DISCLOSURE.md for the original generated classes.
-
-
 class OrderLookup:  # Group order data and lookup actions in a separate tool.
     def __init__(self, orders):  # Receive the dictionary when creating a tool.
         self.orders = orders  # Keep the orders so later methods can read them.
