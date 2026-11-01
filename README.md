@@ -37,10 +37,4 @@ If real customer data were used, the conversation history could accidentally ret
 ```
 
 ## AI assistance and submission
-
-The class code was generated with AI assistance. Each executable class line has
-a comment explaining what it does and why; `AI_DISCLOSURE.md` preserves the generated
-classes. Read and understand each line before submitting, as required by the lab.
-
-From the repository root, commit with a message containing `lab 10`, push to your
-public GitHub repository, and paste that repository URL into Canvas.
+I used ChatGPT for explanations and debugging support while completing this lab. The specific assistance is documented in AI_DISCLOSURE.md.
