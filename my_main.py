@@ -1,3 +1,6 @@
+# my_main.py
+# Author: Mason Dedeaux
+
 from my_assistant import CafeAssistant
 from my_tool import FaqLookup
 from ollama_model import OllamaModel
@@ -20,7 +23,7 @@ Do not invent facts. Answer briefly."""
     bot = CafeAssistant(
         "Bean",
         FaqLookup(ANSWERS),
-        instructions,   
+        instructions,
         OllamaModel("granite4.1:3b"),
     )
     print("Type a message, or type quit to stop.")

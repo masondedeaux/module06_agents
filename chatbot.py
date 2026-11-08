@@ -61,4 +61,3 @@ class SupportChatbot:  # Bundle conversation state and response methods.
             if message["role"] == "user":  # Exclude assistant replies from counting.
                 count += 1  # Count this user message once.
         return count  # Return the number of user turns.
-

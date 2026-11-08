@@ -1,7 +1,7 @@
 from chatbot import SupportChatbot
+from mock_model import MockModel
 from order_tool import OrderLookup
 from stock_tool import StockLookup
-from mock_model import MockModel
 
 
 def main():

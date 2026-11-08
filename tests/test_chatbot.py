@@ -1,8 +1,9 @@
 from chatbot import SupportChatbot
+from echo_model import EchoModel
+from mock_model import MockModel
 from order_tool import OrderLookup
 from stock_tool import StockLookup
-from mock_model import MockModel
-from echo_model import EchoModel
+
 
 def make_bot():
     """Build a fresh chatbot with its own tools for each test."""
@@ -81,6 +82,7 @@ def test_other_messages_go_to_the_model():
     bot = make_bot()
     assert bot.respond("hello") == "Hello! How can I help you today?"
 
+
 class SilentModel:
     def reply(self, instructions, history):
         return None
@@ -92,6 +94,7 @@ def test_safe_reply_when_the_model_has_no_answer():
     assert bot.respond("hello") == (
         "Sorry, I can't answer that right now. Please try again in a moment."
     )
+
 
 def test_order_rule_does_not_need_the_model():
     bot = make_bot()

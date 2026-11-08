@@ -17,14 +17,14 @@ class CafeAssistant:  # Organize a mock cafe assistant's state and behavior.
         for word in ["allerg", "refund", "payment", "card"]:  # Identify staff topics.
             if word in text:  # Check handoff rules before informational replies.
                 return "Please ask a cafe staff member about that; I can't handle it here."  # Handoff.
-        if "?" in text or any(
-            word in text for word in ["hours", "parking", "wi-fi"]
-        ):
+        if "?" in text or any(word in text for word in ["hours", "parking", "wi-fi"]):
             answer = self.tool.find_answer(user_message)
             if answer is not None:
                 return answer
 
         reply = self.model.reply(self.instructions, self.history)
         if not isinstance(reply, str) or not reply.strip():
-            return "Sorry, I can't answer that right now. Please ask a cafe staff member."
+            return (
+                "Sorry, I can't answer that right now. Please ask a cafe staff member."
+            )
         return reply

@@ -35,9 +35,7 @@ def test_unsupported_request_is_safe():
 
 
 def test_sensitive_request_goes_to_staff_before_faq():
-    reply = make_assistant().respond(
-        "During your hours, can you handle my allergy?"
-    )
+    reply = make_assistant().respond("During your hours, can you handle my allergy?")
     assert "staff member" in reply
 
 

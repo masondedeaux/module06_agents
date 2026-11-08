@@ -38,3 +38,12 @@ If real customer data were used, the conversation history could accidentally ret
 
 ## AI assistance and submission
 I used ChatGPT for explanations and debugging support while completing this lab. The specific assistance is documented in AI_DISCLOSURE.md.
+
+## Week 11: Cafe Assistant with a Model
+
+I added Ollama to my cafe assistant so it can respond to messages that its rules do not cover.
+The model answered my greeting, "hello", with "Hello! How may I assist you today?"
+When I asked whether the cafe sells blueberry muffins, it said it did not have that information and told me to contact staff.
+I kept hours, parking, and Wi-Fi answers in the FAQ tool so those facts come from stored data.
+I also kept allergy, refund, and payment handoffs in code because those requests need a staff member.
+If the model returns no answer, the assistant gives a safe message asking the customer to contact staff.
