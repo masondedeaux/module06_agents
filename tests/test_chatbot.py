@@ -2,6 +2,7 @@ from chatbot import SupportChatbot
 from order_tool import OrderLookup
 from stock_tool import StockLookup
 from mock_model import MockModel
+from echo_model import EchoModel
 
 def make_bot():
     """Build a fresh chatbot with its own tools for each test."""
@@ -102,3 +103,9 @@ def test_handoff_rule_does_not_need_the_model():
     bot = make_bot()
     bot.model = SilentModel()
     assert "human" in bot.respond("Please change my shipping address")
+
+
+def test_echo_model_repeats_last_message():
+    bot = make_bot()
+    bot.model = EchoModel()
+    assert bot.respond("good morning") == "You said: good morning"
