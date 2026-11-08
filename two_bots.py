@@ -1,16 +1,17 @@
 from chatbot import SupportChatbot
 from order_tool import OrderLookup
 from stock_tool import StockLookup
+from mock_model import MockModel
 
 
 def main():
     order_tool = OrderLookup({"A100": "shipped", "A101": "processing"})
     stock_tool = StockLookup({"rain jacket": 12})
     sunny = SupportChatbot(
-        "Sunny", "You are cheerful and brief.", order_tool, stock_tool
+        "Sunny", "You are cheerful and brief.", order_tool, stock_tool, MockModel()
     )
     river = SupportChatbot(
-        "River", "You are formal and detailed.", order_tool, stock_tool
+        "River", "You are formal and detailed.", order_tool, stock_tool, MockModel()
     )
     sunny.respond("hello")
     sunny.respond("Where is order A100?")
