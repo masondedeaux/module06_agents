@@ -1,3 +1,4 @@
+from mock_model import MockModel
 from chatbot import SupportChatbot
 from order_tool import OrderLookup
 from stock_tool import StockLookup
@@ -14,6 +15,7 @@ def main():
         "You are a friendly support assistant for Bayside Outfitters.",
         order_tool,
         stock_tool,
+        MockModel(),
     )
     print("Type a message, or type quit to stop.")
     user_message = input("You: ")

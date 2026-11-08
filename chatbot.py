@@ -2,11 +2,12 @@ HANDOFF_WORDS = ["address", "payment", "card"]
 
 
 class SupportChatbot:  # Bundle conversation state and response methods.
-    def __init__(self, name, instructions, order_tool, stock_tool):  # Set up a bot.
+    def __init__(self, name, instructions, order_tool, stock_tool, model):
         self.name = name  # Keep this bot's name for its greeting.
         self.instructions = instructions  # Store instructions as mock metadata.
         self.order_tool = order_tool  # Composition: give the bot an order tool.
         self.stock_tool = stock_tool  # Composition: give it a separate stock tool.
+        self.model = model  # Store the model this bot will use.
         self.history = []  # Create a fresh list so bots do not share messages.
 
     def respond(self, user_message):  # Handle and record one conversation turn.
@@ -23,9 +24,10 @@ class SupportChatbot:  # Bundle conversation state and response methods.
             return self.order_reply(user_message)  # Return the lookup reply.
         if "stock" in text:  # Route stock questions to the second tool method.
             return self.stock_reply(user_message)  # Return the stock lookup reply.
-        if "hello" in text:  # Recognize the lab's simple greeting.
-            return f"Hello! I'm {self.name}. I can check an order status for you."  # Greet.
-        return "I'm not sure how to help with that. I can check an order status."  # Safe fallback.
+        reply = self.model.reply(self.instructions, self.history)
+        if not isinstance(reply, str) or not reply.strip():
+            return "Sorry, I can't answer that right now. Please try again in a moment."
+        return reply
 
     def needs_human(self, text):  # Decide whether a person must handle the request.
         for word in HANDOFF_WORDS:  # Examine each sensitive keyword.
@@ -59,3 +61,4 @@ class SupportChatbot:  # Bundle conversation state and response methods.
             if message["role"] == "user":  # Exclude assistant replies from counting.
                 count += 1  # Count this user message once.
         return count  # Return the number of user turns.
+
