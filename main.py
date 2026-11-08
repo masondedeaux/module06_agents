@@ -1,4 +1,4 @@
-from mock_model import MockModel
+from ollama_model import OllamaModel
 from chatbot import SupportChatbot
 from order_tool import OrderLookup
 from stock_tool import StockLookup
@@ -15,7 +15,7 @@ def main():
         "You are a friendly support assistant for Bayside Outfitters.",
         order_tool,
         stock_tool,
-        MockModel(),
+        OllamaModel("granite4.1:3b"),
     )
     print("Type a message, or type quit to stop.")
     user_message = input("You: ")
