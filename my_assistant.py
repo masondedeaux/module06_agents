@@ -1,7 +1,9 @@
 class CafeAssistant:  # Organize a mock cafe assistant's state and behavior.
-    def __init__(self, name, tool):  # Receive a name and a separate FAQ tool.
+    def __init__(self, name, tool, instructions, model):
         self.name = name  # Store the name used in greetings.
         self.tool = tool  # Composition: store the tool instead of cafe facts.
+        self.instructions = instructions
+        self.model = model
         self.history = []  # Give each assistant its own conversation history.
 
     def respond(self, user_message):  # Process one message and save both sides.
@@ -15,13 +17,14 @@ class CafeAssistant:  # Organize a mock cafe assistant's state and behavior.
         for word in ["allerg", "refund", "payment", "card"]:  # Identify staff topics.
             if word in text:  # Check handoff rules before informational replies.
                 return "Please ask a cafe staff member about that; I can't handle it here."  # Handoff.
-        if "hello" in text:  # Handle a simple greeting.
-            return f"Hello! I'm {self.name}. Ask about our hours, parking, or Wi-Fi."  # Explain scope.
         if "?" in text or any(
             word in text for word in ["hours", "parking", "wi-fi"]
-        ):  # FAQ route.
-            answer = self.tool.find_answer(user_message)  # Ask the separate tool.
-            if answer is None:  # Handle a lookup with no matching stored fact.
-                return "I don't have that information. Try hours, parking, or Wi-Fi, or ask staff."  # Clarify.
-            return answer  # Return the stored fact without inventing details.
-        return "I'm not sure how to help with that. I can answer cafe FAQs."  # Safe fallback.
+        ):
+            answer = self.tool.find_answer(user_message)
+            if answer is not None:
+                return answer
+
+        reply = self.model.reply(self.instructions, self.history)
+        if not isinstance(reply, str) or not reply.strip():
+            return "Sorry, I can't answer that right now. Please ask a cafe staff member."
+        return reply
