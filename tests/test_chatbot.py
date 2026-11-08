@@ -1,14 +1,14 @@
 from chatbot import SupportChatbot
 from order_tool import OrderLookup
 from stock_tool import StockLookup
-
+from mock_model import MockModel
 
 def make_bot():
     """Build a fresh chatbot with its own tools for each test."""
     orders = {"A100": "shipped", "A101": "processing"}
     stock = {"rain jacket": 12}
     return SupportChatbot(
-        "Sunny", "Be friendly.", OrderLookup(orders), StockLookup(stock)
+        "Sunny", "Be friendly.", OrderLookup(orders), StockLookup(stock), MockModel()
     )
 
 
@@ -74,3 +74,31 @@ def test_stock_question_uses_second_tool():
     assert bot.respond("Do you have it in stock?") == (
         "Which product? Please name the item you want me to check."
     )
+
+
+def test_other_messages_go_to_the_model():
+    bot = make_bot()
+    assert bot.respond("hello") == "Hello! How can I help you today?"
+
+class SilentModel:
+    def reply(self, instructions, history):
+        return None
+
+
+def test_safe_reply_when_the_model_has_no_answer():
+    bot = make_bot()
+    bot.model = SilentModel()
+    assert bot.respond("hello") == (
+        "Sorry, I can't answer that right now. Please try again in a moment."
+    )
+
+def test_order_rule_does_not_need_the_model():
+    bot = make_bot()
+    bot.model = SilentModel()
+    assert bot.respond("Where is order A100?") == "Order A100 is shipped."
+
+
+def test_handoff_rule_does_not_need_the_model():
+    bot = make_bot()
+    bot.model = SilentModel()
+    assert "human" in bot.respond("Please change my shipping address")
