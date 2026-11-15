@@ -12,6 +12,20 @@ class OrderLookup:  # Group order data and lookup actions in a separate tool.
         if order_id in self.orders:  # Check existence before reading the value.
             return self.orders[order_id]["status"]  # Return the stored status.
         return None  # Report an unknown order without raising KeyError.
+
+    def check_return(self, order_id):  # Check eligibility against the exact order ID.
+        """Check if one order can be returned.
+
+        Args:
+            order_id: The order ID, like A100.
+        """
+        status = self.find_status(order_id.upper())  # Accept lowercase order IDs.
+        if status is None:  # Report an unknown order before applying the return rule.
+            return "No order with that ID was found. Order IDs look like A100."
+        if status == "delivered":  # A delivered order is eligible for 30 days.
+            return f"Order {order_id.upper()} can be returned within 30 days."
+        return f"Order {order_id.upper()} can't be returned until it is delivered."
+
     def look_up_order(self, order_id):
         """Look up the status of one order.
 

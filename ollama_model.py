@@ -6,7 +6,7 @@ from ollama import Client, ResponseError
 
 
 class OllamaModel:
-    """Ask a local Ollama model for a reply."""
+    """Ask a local Ollama model for a reply or a tool request."""
 
     def __init__(self, model_name):
         self.model_name = model_name
@@ -27,3 +27,35 @@ class OllamaModel:
             return response.message.content
         except (ConnectionError, ResponseError, RequestError):
             return None
+
+    def decide(self, instructions, history, tools):
+        """Send the conversation and tools. Return a reply or a tool request."""
+        messages = [{"role": "system", "content": instructions}]
+        for message in history:
+            if message["role"] == "tool":
+                messages.extend(self.tool_messages(message))
+            else:
+                messages.append(message)
+
+        try:
+            response = self.client.chat(
+                model=self.model_name,
+                messages=messages,
+                tools=tools,
+            )
+        except (ConnectionError, ResponseError, RequestError):
+            return None
+
+        if response.message.tool_calls:
+            call = response.message.tool_calls[0]
+            return {"tool": call.function.name, "arguments": call.function.arguments}
+        return {"text": response.message.content}
+
+    def tool_messages(self, message):
+        """Turn one recorded tool use into the two messages Ollama expects."""
+        name = message["tool_name"]
+        request = {"function": {"name": name, "arguments": message["arguments"]}}
+        return [
+            {"role": "assistant", "content": "", "tool_calls": [request]},
+            {"role": "tool", "tool_name": name, "content": message["content"]},
+        ]

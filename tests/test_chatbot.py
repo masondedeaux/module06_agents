@@ -1,6 +1,7 @@
 from change_queue import ChangeQueue
 from chatbot import SupportChatbot
 from fake_model import FakeModel
+from fallback_model import FallbackModel
 from keyword_model import KeywordModel
 from order_tool import OrderLookup
 from stock_tool import StockLookup
@@ -19,6 +20,7 @@ def make_bot(model):
     orders = {
         "A100": {"status": "shipped", "address": "14 Bay Road"},
         "A101": {"status": "processing", "address": "3 Gull Lane"},
+        "A102": {"status": "delivered", "address": "88 Pier Street"},
     }
     order_tool = OrderLookup(orders)
     stock_tool = StockLookup({"rain jacket": 12, "day pack": 0})
@@ -158,3 +160,25 @@ def test_count_user_messages_skips_tool_entries():
     bot.respond("hello")
     bot.respond("Where is order A100?")
     assert bot.count_user_messages() == 2
+
+
+def test_model_can_check_return_eligibility():
+    model = FakeModel(
+        [
+            ask_for_tool("check_return", {"order_id": "A102"}),
+            {"text": "Order A102 can be returned within 30 days."},
+        ]
+    )
+    bot = make_bot(model)
+    assert (
+        bot.respond("Can I return order A102?")
+        == "Order A102 can be returned within 30 days."
+    )
+    assert bot.history[1]["content"] == "Order A102 can be returned within 30 days."
+    refusal = bot.tools.run("check_return", {"order_id": "A100"}, bot.history)
+    assert "has not given that order ID" in refusal
+
+
+def test_fallback_model_keeps_order_lookup_available():
+    bot = make_bot(FallbackModel(SilentModel(), KeywordModel()))
+    assert bot.respond("Where is order A100?") == "Order A100 is shipped."

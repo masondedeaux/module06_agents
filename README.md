@@ -47,3 +47,9 @@ When I asked whether the cafe sells blueberry muffins, it said it did not have t
 I kept hours, parking, and Wi-Fi answers in the FAQ tool so those facts come from stored data.
 I also kept allergy, refund, and payment handoffs in code because those requests need a staff member.
 If the model returns no answer, the assistant gives a safe message asking the customer to contact staff.
+
+## Week 12: Bean's tools and staff review
+
+I gave Bean a tool for cafe questions and a second tool for requesting table reservations. In the tests, the hours question returned the hours stored in the FAQ. When the model tried to book Monday at 9 am and the customer had only given their name, the toolbox refused the time and the request stayed out of the queue. I told the model to copy the name and time exactly from the customer's messages and to greet the customer normally if they only say hello. A staff member can approve or reject a waiting request after the chat ends.
+
+On my computer, Ollama runs in Ubuntu through WSL. I run the live demos from the project folder in Ubuntu with `~/.venvs/ism3232-week12/bin/python main.py` for Sunny and `~/.venvs/ism3232-week12/bin/python my_main.py` for Bean.

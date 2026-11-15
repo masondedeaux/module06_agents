@@ -15,18 +15,21 @@ class Toolbox:
         """Return the tools the model may ask for. They are not called here."""
         return [
             self.order_tool.look_up_order,
+            self.order_tool.check_return,  # Let the model ask about return eligibility.
             self.stock_tool.check_stock,
             self.change_queue.request_address_change,
         ]
 
     def run(self, name, arguments, history):
         """Check one tool request. Run the tool only if every check passes."""
-        if name == "look_up_order":
+        if name in ("look_up_order", "check_return"):  # Both tools require an order ID.
             order_id = self.clean(arguments, "order_id")
             if order_id == "":
                 return "The order ID is missing. Ask the customer for it."
             if not self.customer_said(history, order_id):
                 return "The customer has not given that order ID. Ask them for it."
+            if name == "check_return":  # Run the return tool after the shared checks.
+                return self.order_tool.check_return(order_id)  # Check delivery status.
             return self.order_tool.look_up_order(order_id)
 
         if name == "check_stock":
@@ -48,11 +51,18 @@ class Toolbox:
 
         return f"There is no tool named {name}."
 
-    def clean(self, arguments, key):
+    @staticmethod  # Bean can reuse argument cleanup without Sunny's tools.
+    def clean(arguments, key):  # Read an argument from the model's tool request.
         """Return one argument as text without extra spaces, or "" if it is missing."""
-        return str(arguments.get(key, "")).strip()
+        value = arguments.get(
+            key
+        )  # Both an omitted value and an explicit null are empty.
+        return (
+            "" if value is None else str(value).strip()
+        )  # Normalize whitespace and numbers.
 
-    def customer_said(self, history, text):
+    @staticmethod  # Both assistants check their own conversation history.
+    def customer_said(history, text):  # Look only at messages written by the customer.
         """Return True if text appears in a message the customer typed."""
         for message in history:
             if message["role"] == "user" and text.lower() in message["content"].lower():
