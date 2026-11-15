@@ -1,63 +1,69 @@
-HANDOFF_WORDS = ["address", "payment", "card"]
+# chatbot.py
+# Author: Mason Dedeaux
+
+HANDOFF_WORDS = ["payment", "card"]
+MAX_TOOL_ROUNDS = 3
 
 
-class SupportChatbot:  # Bundle conversation state and response methods.
-    def __init__(self, name, instructions, order_tool, stock_tool, model):
-        self.name = name  # Keep this bot's name for its greeting.
-        self.instructions = instructions  # Store instructions as mock metadata.
-        self.order_tool = order_tool  # Composition: give the bot an order tool.
-        self.stock_tool = stock_tool  # Composition: give it a separate stock tool.
-        self.model = model  # Store the model this bot will use.
-        self.history = []  # Create a fresh list so bots do not share messages.
+class SupportChatbot:
+    """A support chatbot. The model decides. The toolbox checks every tool request."""
 
-    def respond(self, user_message):  # Handle and record one conversation turn.
-        self.history.append({"role": "user", "content": user_message})  # Log input.
-        reply = self.choose_reply(user_message)  # Apply this bot's reply rules.
-        self.history.append({"role": "assistant", "content": reply})  # Log output.
-        return reply  # Give the response to the calling program.
+    def __init__(self, name, instructions, tools, model):
+        """Set up one chatbot with its own name, instructions, tools, model, and history."""
+        self.name = name
+        self.instructions = instructions
+        self.tools = tools
+        self.model = model
+        self.history = []
 
-    def choose_reply(self, user_message):  # Pick a reply with mock keyword rules.
-        text = user_message.lower()  # Normalize text for case-insensitive checks.
-        if self.needs_human(text):  # Give sensitive requests highest priority.
-            return "I can't help with that here. I'm passing you to a human agent."  # Handoff.
-        if "order" in text:  # Route order questions to the order tool method.
-            return self.order_reply(user_message)  # Return the lookup reply.
-        if "stock" in text:  # Route stock questions to the second tool method.
-            return self.stock_reply(user_message)  # Return the stock lookup reply.
-        reply = self.model.reply(self.instructions, self.history)
-        if not isinstance(reply, str) or not reply.strip():
-            return "Sorry, I can't answer that right now. Please try again in a moment."
+    def respond(self, user_message):
+        """Record the user's message, choose a reply, record it, and return it."""
+        self.history.append({"role": "user", "content": user_message})
+        reply = self.choose_reply(user_message)
+        self.history.append({"role": "assistant", "content": reply})
         return reply
 
-    def needs_human(self, text):  # Decide whether a person must handle the request.
-        for word in HANDOFF_WORDS:  # Examine each sensitive keyword.
-            if word in text:  # Use the lab's simple substring matching rule.
-                return True  # Stop as soon as a handoff word is found.
-        return False  # Allow normal routing when no handoff word occurs.
+    def choose_reply(self, user_message):
+        """Pass payment questions to a person. Send everything else to the model."""
+        if self.needs_human(user_message.lower()):
+            return "I can't help with that here. I'm passing you to a human agent."
+        return self.model_reply()
 
-    def order_reply(self, user_message):  # Answer using the injected order tool.
-        order_id = self.order_tool.find_order_id(user_message)  # Find a known ID.
-        if order_id is None:  # Handle messages with no recognized order ID.
-            return "Which order? Please send an order ID like A100."  # Ask for an ID.
-        status = self.order_tool.find_status(order_id)  # Read the stored status.
-        if status is None:  # Handle a tool that cannot supply a status.
-            return "I couldn't find that order's status. Please ask a human agent."  # Avoid guessing.
-        return f"Order {order_id} is {status}."  # Report the tool's actual result.
+    def needs_human(self, text):
+        """Return True if the message is about something a person must handle."""
+        for word in HANDOFF_WORDS:
+            if word in text:
+                return True
+        return False
 
-    def stock_reply(self, user_message):  # Answer using the injected stock tool.
-        product = self.stock_tool.find_product(user_message)  # Find a known item.
-        if product is None:  # Handle missing or unrecognized product names.
-            return (
-                "Which product? Please name the item you want me to check."  # Clarify.
+    def model_reply(self):
+        """Ask the model. Run each tool it asks for, then ask again, up to a limit."""
+        rounds = 0
+        while rounds < MAX_TOOL_ROUNDS:
+            tool_list = self.tools.tool_list()
+            decision = self.model.decide(self.instructions, self.history, tool_list)
+            if decision is None:
+                return "Sorry, I can't answer that right now. Please try again in a moment."
+            if "text" in decision:
+                return decision["text"]
+            name = decision["tool"]
+            arguments = decision["arguments"]
+            result = self.tools.run(name, arguments, self.history)
+            self.history.append(
+                {
+                    "role": "tool",
+                    "tool_name": name,
+                    "arguments": arguments,
+                    "content": result,
+                }
             )
-        count = self.stock_tool.count_for(product)  # Look up the available count.
-        if count is None:  # Handle a failed count lookup without inventing stock.
-            return "I couldn't find that stock count. Please ask a human agent."  # Explain.
-        return f"We have {count} of the {product} in stock."  # Include zero honestly.
+            rounds += 1
+        return "Sorry, I couldn't finish that. I'm passing you to a human agent."
 
-    def count_user_messages(self):  # Exercise 2: count user entries in history.
-        count = 0  # Start with no counted messages.
-        for message in self.history:  # Visit every recorded conversation entry.
-            if message["role"] == "user":  # Exclude assistant replies from counting.
-                count += 1  # Count this user message once.
-        return count  # Return the number of user turns.
+    def count_user_messages(self):
+        """Return how many messages the user has sent so far."""
+        count = 0
+        for message in self.history:
+            if message["role"] == "user":
+                count += 1
+        return count
